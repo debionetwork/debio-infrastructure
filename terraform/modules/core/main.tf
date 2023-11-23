@@ -1,6 +1,6 @@
 module "activate_apis" {
   source  = "terraform-google-modules/project-factory/google//modules/project_services"
-  version = ">= 13.1.0"
+  version = ">= 14.4.0"
 
   project_id                  = var.project_id
   disable_services_on_destroy = false
@@ -32,7 +32,7 @@ module "activate_apis" {
 
 module "service_accounts" {
   source  = "terraform-google-modules/service-accounts/google"
-  version = ">= 4.1.1"
+  version = ">= 4.2.2"
 
   for_each = { for k, v in var.service_accounts : k => v }
 
@@ -47,7 +47,7 @@ module "service_accounts" {
 
 module "storage_buckets" {
   source  = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
-  version = ">= 3.3.0"
+  version = ">= 5.0.0"
 
   for_each = { for k, v in var.storage_buckets : k => v }
 
@@ -62,7 +62,7 @@ module "storage_buckets" {
 
 module "gh_oidc_service_accounts" {
   source  = "terraform-google-modules/service-accounts/google"
-  version = ">= 4.1.1"
+  version = ">= 4.2.2"
 
   project_id    = var.project_id
   names         = ["github-actions"]
@@ -83,7 +83,7 @@ module "gh_oidc_service_accounts" {
 
 module "gh_oidc" {
   source  = "terraform-google-modules/github-actions-runners/google//modules/gh-oidc"
-  version = ">= 3.1.0"
+  version = ">= 3.1.2"
 
   project_id  = var.project_id
   pool_id     = "github-actions"
@@ -108,7 +108,7 @@ module "gh_oidc" {
 
 module "gke_network" {
   source  = "terraform-google-modules/network/google"
-  version = ">= 5.2.0"
+  version = ">= 8.0.0"
 
   project_id   = var.project_id
   network_name = var.gke_network_name
@@ -142,7 +142,7 @@ module "gke_network" {
 
 module "gke_cloud_nat" {
   source  = "terraform-google-modules/cloud-nat/google"
-  version = ">= 2.2.1"
+  version = ">= 5.0.0"
 
   project_id    = var.project_id
   region        = var.region
@@ -157,7 +157,7 @@ module "gke_cloud_nat" {
 
 module "gke_bastion_service_accounts" {
   source  = "terraform-google-modules/service-accounts/google"
-  version = ">= 4.1.1"
+  version = ">= 4.2.2"
 
   project_id    = var.project_id
   names         = ["bastion"]
@@ -176,7 +176,7 @@ module "gke_bastion_service_accounts" {
 
 module "gke_bastion_custom_roles" {
   source = "terraform-google-modules/iam/google//modules/custom_role_iam"
-  version = ">= 7.4.1"
+  version = ">= 7.7.1"
 
   target_id            = var.project_id
   role_id              = "bastionOSLoginProjectGet"
@@ -199,7 +199,7 @@ data "template_file" "bastion_startup_script" {
 
 module "gke_bastion" {
   source  = "terraform-google-modules/bastion-host/google"
-  version = ">= 5.0.0"
+  version = ">= 6.0.0"
 
   project        = var.project_id
   host_project   = var.project_id
@@ -222,7 +222,7 @@ module "gke_bastion" {
 
 module "gke_cluster" {
   source  = "terraform-google-modules/kubernetes-engine/google//modules/safer-cluster-update-variant"
-  version = ">= 23.0.0"
+  version = ">= 29.0.0"
 
   project_id            = var.project_id
   name                  = var.gke_cluster_name
@@ -251,7 +251,7 @@ module "gke_cluster" {
 
 module "gke_workload_identity_bindings" {
   source = "terraform-google-modules/iam/google//modules/service_accounts_iam"
-  version = ">= 7.4.1"
+  version = ">= 7.7.1"
 
   for_each = { for k, v in var.service_accounts : k => v if v.gke_wif_enabled }
 
@@ -270,7 +270,7 @@ module "gke_workload_identity_bindings" {
 
 module "redis" {
   source  = "terraform-google-modules/memorystore/google"
-  version = ">= 5.1.0"
+  version = ">= 7.1.3"
 
   project                 = var.project_id
   name                    = var.gke_cluster_name
@@ -290,7 +290,7 @@ module "redis" {
 
 module "postgresql_private_service_access" {
   source  = "GoogleCloudPlatform/sql-db/google//modules/private_service_access"
-  version = "12.0.0"
+  version = "17.1.0"
 
   project_id  = var.project_id
   vpc_network = module.gke_network.network_name
@@ -302,7 +302,7 @@ module "postgresql_private_service_access" {
 
 module "postgresql" {
   source  = "GoogleCloudPlatform/sql-db/google//modules/postgresql"
-  version = "12.0.0"
+  version = "17.1.0"
 
   project_id                       = var.project_id
   name                             = var.gke_cluster_name

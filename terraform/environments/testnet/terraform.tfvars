@@ -57,9 +57,9 @@ gke_cluster_name         = "debionetwork"
 gke_node_pools           = [
   {
     name         = "general"
-    machine_type = "e2-standard-2"
+    machine_type = "e2-medium"
     min_count    = 1
-    max_count    = 2
+    max_count    = 1
     auto_upgrade = true
   }
 ]
