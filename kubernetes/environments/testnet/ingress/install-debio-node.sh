@@ -27,11 +27,11 @@ metadata:
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-    nginx.ingress.kubernetes.io/proxy-connect-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
-    nginx.ingress.kubernetes.io/server-snippets: location / { proxy_http_version 1.1; proxy_set_header Upgrade $http_upgrade; proxy_set_header Connection "upgrade"; }
+    nginx.ingress.kubernetes.io/upstream-vhost: gateway.testnet.octopus.network
     nginx.ingress.kubernetes.io/rewrite-target: /debionetwork/554976cbb180f676f188abe14d63ca24
+    nginx.ingress.kubernetes.io/server-snippet: |
+      proxy_ssl_name gateway.testnet.octopus.network;
+      proxy_ssl_server_name on;
 spec:
   ingressClassName: nginx
   rules:
