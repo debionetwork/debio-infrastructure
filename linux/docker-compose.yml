@@ -1,0 +1,219 @@
+version: '3.8'
+services:
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER:
+      MINIO_ROOT_PASSWORD:
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - app-network
+
+  elasticsearch:
+    image: elasticsearch:7.17.18
+    container_name: elasticsearch
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      - discovery.type=single-node
+    volumes:
+      - elastic_data:/data/elasticsearch
+    networks:
+      - app-network
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6378:6379"
+    volumes:
+      - redis_data:/data/redis
+    networks:
+      - app-network
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    ports:
+      - "8083:8080"
+    volumes:
+      - postgres_data:/data/postgres
+    environment:
+      - POSTGRES_PASSWORD:
+    networks:
+      - app-network
+
+  debio-customer-ui:
+    container_name: debio-customer-ui
+    image: debionetwork/debio-customer-ui:latest
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - VUE_APP_VERSION=
+      - VUE_APP_RECAPTCHA_SITE_KEY=
+      - VUE_APP_ROLE=
+      - VUE_APP_DEBIO_SUBSTRATE_WS=
+      - VUE_APP_MYRIAD_SUBSTRATE_WS=
+      - VUE_APP_WEB3_RPC=https://goerli.infura.io/v3/63a42990edda45e9ba8fb637239e63f0
+      - VUE_APP_BACKEND_API=https://api.testnet.debio.network
+      - VUE_APP_DEBIO_API_KEY=
+      - VUE_APP_USERNAME=
+      - VUE_APP_PASSWORD=
+      - VUE_APP_MIXPANEL_TOKEN=
+      - VUE_APP_SENTRY_DSN=
+      - VUE_APP_PINATA_GATEWAY=https://ipfs.debio.network/ipfs
+      - VUE_APP_PINATA_JWT_KEY=
+      - VUE_APP_DEBIO_USDT_TOKEN_ID=usdt.fakes.testnet
+      - VUE_APP_PINATA_REQUIRED_DOCUMENT=0
+      - VUE_APP_OCTOPUS_EXPLORER=https://explorer.testnet.oct.network/debionetwork
+      - VUE_APP_SERVICE_REQUEST_LINK=
+      - VUE_APP_PHYSICAL_HEALTH_TIMELINE_ID=63bb8a1f3367c1001ca30e5a
+      - VUE_APP_MENTAL_HEALTH_TIMELINE_ID=63bc1c8a60a414001d151008
+      - VUE_APP_MYRIAD_URL=
+    networks:
+      - app-network
+    depends_on:
+      - debio-backend
+
+  debio-frontend:
+    image: debionetwork/debio-frontend:834e2529c03ce05403845410ce38cf4728f49b69
+    restart: always
+    container_name: debio-frontend
+    # Assuming it's a web service, expose the necessary port
+    ports:
+      - "8081:8080"
+    depends_on:
+      - debio-backend
+    environment:
+      - VUE_APP_VERSION=
+      - VUE_APP_RECAPTCHA_SITE_KEY=
+      - VUE_APP_ROLE=
+      - VUE_APP_DEBIO_SUBSTRATE_WS=
+      - VUE_APP_WEB3_RPC=
+      - VUE_APP_BACKEND_API=
+      - VUE_APP_DEBIO_API_KEY=
+      - VUE_APP_USERNAME=
+      - VUE_APP_PASSWORD=
+      - VUE_APP_MIXPANEL_TOKEN=ae5505ba8c8289a57b0c45feec2ab713
+      - VUE_APP_SENTRY_DSN=https://ecbd246592b1401696f1f819fd1e0b07@o1092918.ingest.sentry.io/6149727
+      - VUE_APP_PINATA_GATEWAY=https://ipfs.debio.network/ipfs
+      - VUE_APP_PINATA_JWT_KEY=
+      - VUE_APP_DEBIO_USDT_TOKEN_ID=usdt.fakes.testnet
+      - VUE_APP_PINATA_REQUIRED_DOCUMENT=0
+      - VUE_APP_OCTOPUS_EXPLORER=https://explorer.testnet.oct.network/debionetwork
+      - VUE_APP_DEBIO_ESSCROW_ADDRESS=
+    networks:
+      - app-network
+
+  debio-genetic-analyst-ui:
+    image: debionetwork/debio-genetic-analyst-ui:f4b2908ad0afc2460d4f8f07a91ff8bc1d9b9682
+    restart: always
+    container_name: debio-genetic-analyst-ui
+    # Assuming it's a web service, expose the necessary port
+    ports:
+      - "8082:8080"
+    depends_on:
+      - debio-backend
+    environment:
+      - VUE_APP_VERSION=
+      - VUE_APP_RECAPTCHA_SITE_KEY=
+      - VUE_APP_ROLE=
+      - VUE_APP_DEBIO_SUBSTRATE_WS=
+      - VUE_APP_WEB3_RPC=https://goerli.infura.io/v3/975c178197104ee8b101e705ad21d170
+      - VUE_APP_BACKEND_API=https://api.testnet.debio.network
+      - VUE_APP_DEBIO_API_KEY=
+      - VUE_APP_USERNAME=
+      - VUE_APP_PASSWORD=
+      - VUE_APP_MIXPANEL_TOKEN=
+      - VUE_APP_SENTRY_DSN=
+      - VUE_APP_PINATA_GATEWAY=https://ipfs.debio.network/ipfs
+      - VUE_APP_PINATA_JWT_KEY=
+      - VUE_APP_PINATA_REQUIRED_DOCUMENT=0
+      - VUE_APP_OCTOPUS_EXPLORER=
+      - VUE_APP_MYRIAD_URL=
+    networks:
+      - app-network
+
+  debio-backend:
+    image: debionetwork/debio-backend:8afc4cd23d63cdf4d05de90549ba791b1d81d888
+    restart: always
+    container_name: debio-backend
+    # Assuming it's a web service, expose the necessary port
+    ports:
+      - "4000:4000"
+    depends_on:
+      - minio
+      - redis
+      - elasticsearch
+    environment:
+      - REQUEST_SERVICE_CONTRACT_ADDRESS=
+      - PARENT=projects/debio-network-testnet
+      - HOST_POSTGRES=
+      - PORT=4000
+      - USERNAME_POSTGRES=api
+      - SWAGGER_ENABLE=true
+      - PASSWORD_POSTGRES=
+      - DB_POSTGRES=debio
+      - DB_CITY=debio_locations
+      - DB_LOCATIONS=debio_locations
+      - SUBSTRATE_URL=wss://gateway.testnet.octopus.network/debionetwork/554976cbb180f676f188abe14d63ca24
+      - ADMIN_SUBSTRATE_MNEMONIC=
+      - WEB3_RPC=wss://goerli.infura.io/ws/v3/63a42990edda45e9ba8fb637239e63f0
+      - WEB3_RPC_HTTPS=https://goerli.infura.io/v3/63a42990edda45e9ba8fb637239e63f0
+      - DEBIO_ESCROW_PRIVATE_KEY=
+      - ESCROW_CONTRACT_ADDRESS=0xe1E2e5Ae02bb01Fbf8d4ab1273C0531aA2FCe2BD 
+      - API_KEY_COINMARKETCAP=
+      - ELASTICSEARCH_NODE=
+      - RECAPTCHA_SECRET_KEY=
+      - DEBIO_API_KEY=
+      - ELASTICSEARCH_USERNAME=
+      - ELASTICSEARCH_PASSWORD=
+      - COINMARKETCAP_HOST=
+      - EMAIL=
+      - PASS_EMAIL=
+      - REDIS_STORE_URL=https://api.testnet.debio.network/conversion
+      - REDIS_STORE_USERNAME=
+      - REDIS_STORE_PASSWORD=
+      - HOST_REDIS=redis
+      - PORT_REDIS=6379
+      - REDIS_PASSWORD=
+      - BUCKET_NAME=
+      - STORAGE_BASE_URI=
+      - EMAILS=
+      - UNSTAKE_INTERVAL=0:00:00:03
+      - UNSTAKE_TIMER=6:00:00:00
+      - PINATA_API_KEY=
+      - PINATA_SECRET_KEY=
+      - PINATA_EMAIL=debio_dev@blocksphere.id
+      - PINATA_USER_ID=
+      - PINATA_EMAIL_VERIFIED=
+      - PINATA_MFA_ENABLED=
+      - PINATA_PIN_POLICY_REGION_ID=
+      - PINATA_PIN_POLICY_REGION_REPL_COUNT=
+      - MYRIAD_API_URL=https://api.testnet.myriad.social
+      - MYRIAD_ADMIN_USERNAME=
+      - PHYSICAL_HEALTH_EXPERIENCE_ID=health/physical
+      - MENTAL_HEALTH_EXPERIENCE_ID=health/mental
+      - MINIO_ENDPOINT=minio,
+      - MINIO_ACCESS_KEY= ,
+      - MINIO_SECRET_KEY= ,
+    networks:
+      - app-network
+
+volumes:
+  elastic_data:
+  minio_data:
+  redis_data:
+  postgres_data:
+
+networks:
+  app-network:
+    driver: bridge
